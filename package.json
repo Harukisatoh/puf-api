@@ -15,7 +15,7 @@
     "fix:format": "prettier --write",
     "format": "yarn fix:format 'src/**/*.(js|md|json)'",
     "lint": "yarn fix:lint 'src/**/*.{js,md,json}'",
-    "dev": "nodemon --exec babel-node src/index.js",
+    "dev": "nodemon --exec babel-node -- -r dotenv-safe/config src/index.js",
     "prebuild": "rm -rf ./dist",
     "build": "babel src --extensions \".js\" --ignore \"*.spec.js,*.test.js\" --out-dir dist --copy-files"
   },
@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@koa/router": "^12.0.0",
+    "dotenv-safe": "^8.2.0",
     "koa": "^2.13.4"
   }
 }
