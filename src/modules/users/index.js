@@ -7,14 +7,15 @@ export const login = async ctx => {
   try {
     const { email, password } = ctx.request.body
 
-    const [user] = await prisma.user.findMany({
+    const user = await prisma.user.findUnique({
       where: {
         email,
-        password,
       },
     })
 
-    if (!user) {
+    const isPasswordEqual = await bcrypt.compare(password, user?.password || '')
+
+    if (!user || !isPasswordEqual) {
       ctx.status = 404
       return
     }
