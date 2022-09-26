@@ -8,8 +8,10 @@ export const login = async ctx => {
     const { email, password } = ctx.request.body
 
     const [user] = await prisma.user.findMany({
-      email,
-      password,
+      where: {
+        email,
+        password,
+      },
     })
 
     if (!user) {
