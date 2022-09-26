@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
+
 import { prisma } from '~/data'
 
 export const login = async ctx => {
@@ -42,17 +44,19 @@ export const create = async ctx => {
   const { name, email, password } = ctx.request.body
 
   try {
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(password, saltRounds)
+
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        password,
+        password: passwordHash,
       },
     })
 
     ctx.body = user
   } catch (error) {
-    console.log(error)
     ctx.status = 500
     ctx.body = 'Ops! Algo deu errado, tente novamente.'
   }
