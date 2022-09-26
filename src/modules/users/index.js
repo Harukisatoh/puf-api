@@ -3,17 +3,20 @@ import bcrypt from 'bcrypt'
 
 import { prisma } from '~/data'
 
-export const login = async ctx => {
-  const [type, credentials] = ctx.request.headers.authorization.split(' ')
+export const decodeBasicAuthToken = basicAuthToken => {
+  const [type, credentials] = basicAuthToken.split(' ')
 
   if (type !== 'Basic') {
-    ctx.status = 400
-    return
+    throw new Error('Wrong token type')
   }
 
-  const [email, password] = Buffer.from(credentials, 'base64')
-    .toString()
-    .split(':')
+  return Buffer.from(credentials, 'base64').toString().split(':')
+}
+
+export const login = async ctx => {
+  const [email, password] = decodeBasicAuthToken(
+    ctx.request.headers.authorization
+  )
 
   try {
     const user = await prisma.user.findUnique({
