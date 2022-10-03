@@ -1,6 +1,6 @@
-import { decodeBasicAuthToken } from './index'
+import { decodeBasicAuthToken } from './services'
 
-describe('User module', () => {
+describe('User services', () => {
   it('should decode basic auth token', () => {
     const email = 'gabriel@haruki.com'
     const password = '123456'
