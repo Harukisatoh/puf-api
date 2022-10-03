@@ -5,12 +5,18 @@ import { prisma } from '~/data'
 
 import { decodeBasicAuthToken } from './services'
 
-export const login = async ctx => {
-  const [email, password] = decodeBasicAuthToken(
-    ctx.request.headers.authorization
-  )
+const errorStatuses = {
+  TokenTypeError: 400,
+  TokenEncodeError: 400,
+  CredentialsFormatError: 400,
+}
 
+export const login = async ctx => {
   try {
+    const [email, password] = decodeBasicAuthToken(
+      ctx.request.headers.authorization
+    )
+
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -31,8 +37,12 @@ export const login = async ctx => {
       token,
     }
   } catch (error) {
-    ctx.status = 500
-    ctx.body = 'Ops! Algo deu errado, tente novamente.'
+    const errorStatusCode = errorStatuses[error.name] || 500
+    const errorMessage =
+      error.message || 'Ops! Algo deu errado, tente novamente.'
+
+    ctx.status = errorStatusCode
+    ctx.body = errorMessage
   }
 }
 

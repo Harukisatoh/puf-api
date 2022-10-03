@@ -1,4 +1,9 @@
-import { decodeBasicAuthToken } from './services'
+import {
+  decodeBasicAuthToken,
+  TokenTypeError,
+  TokenEncodeError,
+  CredentialsFormatError,
+} from './services'
 
 describe('User services', () => {
   it('should decode basic auth token', () => {
@@ -26,7 +31,7 @@ describe('User services', () => {
 
     const decode = () => decodeBasicAuthToken(bearerAuthToken)
 
-    expect(decode).toThrowError('Wrong token type')
+    expect(decode).toThrowError(TokenTypeError)
   })
 
   it('should throw an error if the credentials has a wrong format', () => {
@@ -40,7 +45,7 @@ describe('User services', () => {
 
     const decode = () => decodeBasicAuthToken(basicAuthToken)
 
-    expect(decode).toThrowError('Credentials are incorrectly formatted')
+    expect(decode).toThrowError(CredentialsFormatError)
   })
 
   it('should throw an error if the token is not base64 encoded', () => {
@@ -53,6 +58,6 @@ describe('User services', () => {
 
     const decode = () => decodeBasicAuthToken(basicAuthToken)
 
-    expect(decode).toThrowError('Token is not base64 encoded')
+    expect(decode).toThrowError(TokenEncodeError)
   })
 })
