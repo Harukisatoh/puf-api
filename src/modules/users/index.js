@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { omit } from 'ramda'
 
-import { prisma } from '~/data'
-
+import * as model from './model'
 import { decodeBasicAuthToken } from './services'
 
 const errorStatuses = {
@@ -18,7 +17,7 @@ export const login = async ctx => {
       ctx.request.headers.authorization
     )
 
-    const user = await prisma.user.findUnique({
+    const user = await model.findUnique({
       where: {
         email,
       },
@@ -49,7 +48,7 @@ export const login = async ctx => {
 
 export const list = async ctx => {
   try {
-    const users = await prisma.user.findMany()
+    const users = await model.findMany()
 
     ctx.body = users
   } catch (error) {
@@ -65,7 +64,7 @@ export const create = async ctx => {
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
 
-    const user = await prisma.user.create({
+    const user = await model.create({
       data: {
         name,
         email,
@@ -84,7 +83,7 @@ export const update = async ctx => {
   const { name, email } = ctx.request.body
 
   try {
-    const user = await prisma.user.update({
+    const user = await model.update({
       where: {
         id: ctx.params.id,
       },
@@ -103,7 +102,7 @@ export const update = async ctx => {
 
 export const remove = async ctx => {
   try {
-    await prisma.user.delete({
+    await model.remove({
       where: {
         id: ctx.params.id,
       },
