@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
+import { omit } from 'ramda'
 
 import { prisma } from '~/data'
 
@@ -33,7 +34,7 @@ export const login = async ctx => {
     const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET)
 
     ctx.body = {
-      user,
+      user: omit(['password'], user),
       token,
     }
   } catch (error) {
