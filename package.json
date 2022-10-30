@@ -15,6 +15,7 @@
     "fix:format": "prettier --write",
     "format": "yarn fix:format 'src/**/*.(js|md|json)'",
     "lint": "yarn fix:lint 'src/**/*.{js,md,json}'",
+    "db:migrate": "yarn prisma migrate dev",
     "test": "yarn jest",
     "dev": "nodemon --exec babel-node -- -r dotenv-safe/config src/index.js",
     "prebuild": "rm -rf ./dist",
