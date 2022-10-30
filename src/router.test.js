@@ -1,18 +1,41 @@
 import request from 'supertest'
+import jwt from 'jsonwebtoken'
+
+import { prisma } from '~/data'
 
 import { app } from './server-setup'
 
 const server = app.listen()
 
+const existingUser = {
+  name: 'Gabriel',
+  email: 'existent@email.com',
+  hashedPassword:
+    '$2b$10$EqHJJ/k/88ZrKWdR2bntduYKlqQMv6ev8DBvyPTnemx5l92yPKv1u', // 123456
+  rawPassword: '123456',
+}
+
 describe('User routes', () => {
+  beforeAll(async () => {
+    await prisma.user.deleteMany({})
+    const { id: createdUserId } = await prisma.user.create({
+      data: {
+        name: existingUser.name,
+        email: existingUser.email,
+        password: existingUser.hashedPassword,
+      },
+    })
+
+    existingUser.id = createdUserId
+  })
+
   afterAll(() => {
     server.close()
   })
 
   it("should return a 404 error if email doesn't exists", async () => {
-    // TODO: Need to clear database to ensure email doesn't exist
     const email = 'inexistent@email.com'
-    const password = '123456'
+    const password = existingUser.rawPassword
 
     const response = await request(server).get('/login').auth(email, password)
 
@@ -20,8 +43,7 @@ describe('User routes', () => {
   })
 
   it('should return a 404 error if password is wrong', async () => {
-    // TODO: Need to create user in the db with another password before trying to login
-    const email = 'existent@email.com'
+    const email = existingUser.email
     const password = 'wrong_password'
 
     const response = await request(server).get('/login').auth(email, password)
@@ -29,17 +51,19 @@ describe('User routes', () => {
     expect(response.status).toBe(404)
   })
 
-  // it('should return a 404 error if password is not correct', () => {
-  //   const email = 'gabriel@haruki.com'
-  //   const password = '123456'
+  it('should return a success with the corresponding user when credentials are correct', async () => {
+    const email = existingUser.email
+    const password = existingUser.rawPassword
 
-  //   const credentials = `${email}:${password}`
+    const response = await request(server).get('/login').auth(email, password)
+    const decodedToken = jwt.verify(response.body.token, process.env.JWT_SECRET)
 
-  //   const token = Buffer.from(credentials, 'utf-8').toString('base64')
-  //   const basicAuthToken = `Basic ${token}`
+    expect(response.status).toBe(200)
+    expect(response.body.user).toBeTruthy()
+    expect(response.body.user.id).toBeTruthy()
+    expect(response.body.user.email).toBe(email)
+    expect(response.body.user.password).toBeFalsy()
 
-  //   const result = decodeBasicAuthToken(basicAuthToken)
-
-  //   expect(result).toEqual([email, password])
-  // })
+    expect(decodedToken.sub).toBe(existingUser.id)
+  })
 })
